@@ -1,0 +1,15 @@
+import { Router } from "express";
+
+const router = Router();
+
+router.get("/", (_, res) => {
+
+    res.json({
+        status: "OK",
+        service: "document-api"
+    });
+
+});
+
+
+export default router;
