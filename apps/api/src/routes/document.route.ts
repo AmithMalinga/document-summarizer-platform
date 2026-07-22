@@ -1,25 +1,40 @@
-import {
-    Router
-} from "express";
+import { Router } from "express";
 
+import {
+    uploadDocuments
+} from "../controllers/document.controller";
 
 import {
     upload
 } from "../middleware/upload.middleware";
 
 
-import {
-    uploadDocuments
-} from "../controllers/document.controller";
-
-
-const router =
-    Router();
+const router = Router();
 
 
 router.post(
     "/upload",
-    upload.array("files"),
+
+    (
+        req,
+        res,
+        next
+    ) => {
+
+        upload.array("files")(req, res, (err) => {
+
+            if (err) {
+
+                return next(err);
+
+            }
+
+            next();
+
+        });
+
+    },
+
     uploadDocuments
 );
 

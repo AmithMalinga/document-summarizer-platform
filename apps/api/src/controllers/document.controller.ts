@@ -20,53 +20,77 @@ export async function uploadDocuments(
             req.files as Express.Multer.File[];
 
 
+        /**
+         * No files uploaded
+         */
         if (!files || files.length === 0) {
 
-            return res.status(400)
-                .json({
-                    message: "No files uploaded"
-                });
+            return res.status(400).json({
 
-        }
-
-
-        const results = [];
-
-
-        for (const file of files) {
-
-            const result =
-                await createDocument(file);
-
-            results.push({
-
-                documentId:
-                    result.document.id,
-
-                jobId:
-                    result.job.id,
-
-                status:
-                    result.document.status
+                message: "No files uploaded"
 
             });
 
         }
 
 
-        return res.status(201)
-            .json(results);
+        /**
+         * Multer already validates:
+         * - file type
+         * - file size
+         * - file count
+         *
+         * At this point,
+         * only valid files reach here.
+         */
 
 
-    }
-    catch (error) {
+        const results = await Promise.all(
 
-        console.error(error);
+            files.map(async (file) => {
 
-        return res.status(500)
-            .json({
-                message: "Upload failed"
-            });
+
+                const result =
+                    await createDocument(file);
+
+
+                return {
+
+                    documentId:
+                        result.document.id,
+
+
+                    jobId:
+                        result.job.id,
+
+
+                    status:
+                        result.document.status
+
+                };
+
+            })
+
+        );
+
+
+        return res.status(201).json(results);
+
+
+    } catch (error) {
+
+
+        console.error(
+            "Upload error:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            message: "Upload failed"
+
+        });
 
     }
 
