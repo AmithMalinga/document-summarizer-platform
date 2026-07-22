@@ -1,12 +1,15 @@
 import { Router } from "express";
 
+
 const router = Router();
 
-router.get("/", (_, res) => {
+
+router.get("/", (_req, res) => {
 
     res.json({
-        status: "OK",
-        service: "document-api"
+        status: "ok",
+        service: "api",
+        timestamp: new Date().toISOString()
     });
 
 });
