@@ -3,26 +3,29 @@ import UploadForm from "@/components/UploadForm";
 
 export default function Home() {
   return (
-    <main className="max-w-4xl mx-auto p-6 space-y-8">
-      <header className="flex items-center justify-between border-b pb-4">
+    <main className="mx-auto max-w-4xl space-y-8 p-8">
+      <header className="flex items-center justify-between border-b border-[var(--line)] pb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <p className="font-mono text-xs uppercase tracking-wider text-[var(--ink-soft)]">
+            Ledger
+          </p>
+          <h1 className="font-display text-3xl text-[var(--ink)]">
             Document Summarizer
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="mt-1 text-sm text-[var(--ink-soft)]">
             Upload documents to generate automated AI summaries and classifications
           </p>
         </div>
 
         <Link
-          href="/documents"
-          className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+          href="/dashboard"
+          className="rounded-md border border-[var(--accent)] px-4 py-2 text-sm font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent-soft)]"
         >
-          View Documents →
+          View documents →
         </Link>
       </header>
 
-      <section className="bg-white border rounded-xl p-6 shadow-sm">
+      <section className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-6">
         <UploadForm />
       </section>
     </main>

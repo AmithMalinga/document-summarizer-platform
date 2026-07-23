@@ -23,20 +23,15 @@ export default function DocumentsPage() {
 
     useEffect(() => {
         loadDocuments();
-
-        // Poll every 5 seconds for background worker updates
         const interval = setInterval(loadDocuments, 5000);
-
-        return () => {
-            clearInterval(interval);
-        };
+        return () => clearInterval(interval);
     }, []);
 
     if (loading) {
         return (
-            <div className="max-w-4xl mx-auto p-6 flex items-center justify-center min-h-[300px]">
-                <div className="text-gray-500 text-sm animate-pulse">
-                    Loading documents...
+            <div className="flex min-h-[300px] max-w-4xl items-center justify-center p-6 mx-auto">
+                <div className="font-mono text-xs uppercase tracking-wider text-[var(--ink-soft)]">
+                    Loading documents…
                 </div>
             </div>
         );
@@ -44,15 +39,15 @@ export default function DocumentsPage() {
 
     if (documents.length === 0) {
         return (
-            <div className="max-w-4xl mx-auto p-6 text-center space-y-4">
-                <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
-                <div className="p-8 border border-dashed rounded-lg bg-gray-50 text-gray-500 space-y-3">
+            <div className="mx-auto max-w-4xl space-y-4 p-6 text-center">
+                <h1 className="font-display text-2xl text-[var(--ink)]">Documents</h1>
+                <div className="space-y-3 rounded-lg border border-dashed border-[var(--line)] bg-[var(--surface)] p-8 text-[var(--ink-soft)]">
                     <p>No documents uploaded yet.</p>
                     <Link
                         href="/"
-                        className="inline-block text-sm font-medium text-blue-600 hover:underline"
+                        className="inline-block text-sm font-medium text-[var(--accent)] hover:underline"
                     >
-                        ← Back to Upload
+                        ← Back to upload
                     </Link>
                 </div>
             </div>
@@ -60,25 +55,27 @@ export default function DocumentsPage() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-6 space-y-6">
-            <div className="flex items-center justify-between border-b pb-4">
+        <div className="mx-auto max-w-4xl space-y-6 p-6">
+            <div className="flex items-center justify-between border-b border-[var(--line)] pb-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
-                    <p className="text-sm text-gray-500">
-                        Live auto-refreshing list of processed uploads
+                    <h1 className="font-display text-2xl text-[var(--ink)]">Documents</h1>
+                    <p className="font-mono text-xs uppercase tracking-wider text-[var(--ink-soft)]">
+                        Auto-refreshing every 5s
                     </p>
                 </div>
                 <Link
                     href="/"
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm transition-colors"
+                    className="rounded-md bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
                 >
-                    Upload New Document
+                    Upload new document
                 </Link>
             </div>
 
             <div className="grid gap-4">
                 {documents.map((doc) => (
-                    <DocumentCard key={doc.id} document={doc} />
+                    <Link key={doc.id} href={`/documents/${doc.id}`}>
+                        <DocumentCard document={doc} />
+                    </Link>
                 ))}
             </div>
         </div>

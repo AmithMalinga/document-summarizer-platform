@@ -1,41 +1,36 @@
-import { Document } from "../types/document";
 import StatusBadge from "./StatusBadge";
 
-interface Props {
-    document: Document;
+type Props = {
+    document: any;
+};
+
+function formatSize(bytes: number) {
+    if (bytes === undefined || bytes === null) return "—";
+    const kb = bytes / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
 }
 
 export default function DocumentCard({ document }: Props) {
     return (
-        <div className="border rounded-lg p-4 shadow-sm space-y-3 bg-white">
-            <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-lg text-gray-900 truncate">
-                    {document.filename}
-                </h3>
+        <div className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-5 transition-colors hover:border-[var(--accent)]/40">
+            <div className="flex items-start justify-between gap-3">
+                <h2 className="font-display text-lg leading-snug text-[var(--ink)] line-clamp-2">
+                    {document.originalName}
+                </h2>
                 <StatusBadge status={document.status} />
             </div>
 
-            {document.summary && (
-                <div className="space-y-1">
-                    <h4 className="text-sm font-medium text-gray-700">Summary</h4>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                        {document.summary.content}
-                    </p>
+            <dl className="mt-4 space-y-1.5 font-mono text-[12px] text-[var(--ink-soft)]">
+                <div className="flex justify-between gap-4">
+                    <dt>Type</dt>
+                    <dd className="truncate text-[var(--ink)]">{document.mimeType}</dd>
                 </div>
-            )}
-
-            {document.classification && (
-                <div className="pt-2 border-t flex items-center justify-between text-xs text-gray-500">
-                    <span>
-                        <strong className="font-medium text-gray-700">Category:</strong>{" "}
-                        {document.classification.category}
-                    </span>
-                    <span>
-                        <strong className="font-medium text-gray-700">Confidence:</strong>{" "}
-                        {(document.classification.confidence * 100).toFixed(2)}%
-                    </span>
+                <div className="flex justify-between gap-4">
+                    <dt>Size</dt>
+                    <dd className="text-[var(--ink)]">{formatSize(document.size)}</dd>
                 </div>
-            )}
+            </dl>
         </div>
     );
 }
