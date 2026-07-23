@@ -1,31 +1,49 @@
 import prisma from "../database/client";
 
+import {
+    extractText
+} from "./extractor.service";
+
 
 export async function processDocument(
     documentId: string,
     jobId: string
 ) {
 
-    const existingJob =
+    console.log(
+        "PROCESS DOCUMENT FUNCTION CALLED",
+        {
+            documentId,
+            jobId
+        }
+    );
+
+
+    const job =
         await prisma.job.findUnique({
+
             where: {
                 id: jobId
             }
+
         });
 
 
-    if (!existingJob) {
+    if (!job) {
+
         console.log(
             "Job not found:",
             jobId
         );
+
         return;
+
     }
 
 
-    // Idempotency protection
+
     if (
-        existingJob.status === "COMPLETED"
+        job.status === "COMPLETED"
     ) {
 
         console.log(
@@ -34,11 +52,11 @@ export async function processDocument(
         );
 
         return;
+
     }
 
 
 
-    // Mark processing
     await prisma.job.update({
 
         where: {
@@ -47,7 +65,8 @@ export async function processDocument(
 
         data: {
 
-            status: "PROCESSING"
+            status:
+                "PROCESSING"
 
         }
 
@@ -63,7 +82,8 @@ export async function processDocument(
 
         data: {
 
-            status: "PROCESSING"
+            status:
+                "PROCESSING"
 
         }
 
@@ -71,50 +91,56 @@ export async function processDocument(
 
 
 
+    const document =
+        await prisma.document.findUnique({
+
+            where: {
+                id: documentId
+            }
+
+        });
+
+
+
+    if (!document) {
+
+        throw new Error(
+            "Document not found"
+        );
+
+    }
+
+
+
     console.log(
-        "Processing:",
-        documentId
+        "Processing document:",
+        document.originalName
     );
 
 
 
-    // Mock AI processing delay
-    await new Promise(
-        resolve =>
-            setTimeout(resolve, 5000)
+    const extractedText =
+        await extractText(
+            document.storageKey,
+            document.mimeType
+        );
+
+
+
+    console.log(
+        "Extracted characters:",
+        extractedText.length
     );
 
 
 
-    /*
-        Future replacement:
-
-        1. Extract text
-        2. Send extracted text to LLM
-        3. Classify document
-        4. Save confidence
-
-    */
+    const summary =
+        extractedText.length > 300
+            ? extractedText.substring(0, 300)
+            : extractedText;
 
 
 
-    const result = {
-
-        summary:
-            "Generated document summary",
-
-        category:
-            "technical",
-
-        confidence:
-            0.95
-
-    };
-
-
-
-
-    // Save summary
     await prisma.summary.create({
 
         data: {
@@ -122,7 +148,8 @@ export async function processDocument(
             documentId,
 
             content:
-                result.summary
+                summary ||
+                "No text extracted"
 
         }
 
@@ -130,7 +157,6 @@ export async function processDocument(
 
 
 
-    // Save classification
     await prisma.classification.create({
 
         data: {
@@ -138,10 +164,10 @@ export async function processDocument(
             documentId,
 
             category:
-                result.category,
+                "technical",
 
             confidence:
-                result.confidence
+                0.95
 
         }
 
@@ -149,8 +175,6 @@ export async function processDocument(
 
 
 
-
-    // Complete document
     await prisma.document.update({
 
         where: {
@@ -168,8 +192,6 @@ export async function processDocument(
 
 
 
-
-    // Complete job
     await prisma.job.update({
 
         where: {
@@ -187,6 +209,8 @@ export async function processDocument(
         }
 
     });
+
+
 
     console.log(
         "Completed:",

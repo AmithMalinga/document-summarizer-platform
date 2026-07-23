@@ -9,7 +9,9 @@ const QUEUE =
     "document-processing";
 
 
+
 export async function startConsumer() {
+
 
     const connection =
         await amqp.connect(
@@ -17,8 +19,10 @@ export async function startConsumer() {
         );
 
 
+
     const channel =
         await connection.createChannel();
+
 
 
     await channel.assertQueue(
@@ -26,13 +30,17 @@ export async function startConsumer() {
     );
 
 
+
     console.log(
         "Worker connected to queue"
     );
 
 
+
     channel.consume(
+
         QUEUE,
+
         async message => {
 
 
@@ -40,30 +48,59 @@ export async function startConsumer() {
                 return;
 
 
-            const data =
-                JSON.parse(
-                    message.content.toString()
+
+            try {
+
+
+                const payload =
+                    JSON.parse(
+                        message.content.toString()
+                    );
+
+
+
+                console.log(
+                    "Received job:",
+                    payload
                 );
 
 
-            console.log(
-                "Received job:",
-                data
-            );
+
+                await processDocument(
+
+                    payload.documentId,
+
+                    payload.jobId
+
+                );
 
 
-            await processDocument(
-                data.documentId,
-                data.jobId
-            );
+
+                channel.ack(
+                    message
+                );
 
 
-            channel.ack(
-                message
-            );
+            }
+            catch (error) {
 
+
+                console.error(
+                    "Processing failed:",
+                    error
+                );
+
+
+                channel.nack(
+                    message,
+                    false,
+                    false
+                );
+
+            }
 
         }
+
     );
 
 }
