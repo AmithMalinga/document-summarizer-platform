@@ -1,130 +1,313 @@
-# Document Summarization Platform
+# System Design Document
 
-## Technology Decisions
+## Scalable Document Summarization Platform
 
-Frontend:
-- Next.js
-- React
-- TypeScript
 
-Backend:
-- NestJS
-- PostgreSQL
-- Prisma
+## 1. Architecture Overview
 
-Background Processing:
-- RabbitMQ
-- Node.js Worker
 
-Storage:
-- MinIO Object Storage
+The platform uses an asynchronous distributed architecture.
 
-AI:
-- Provider Adapter Pattern
-- Mock implementation initially
 
-## Database Layer
+Components:
 
-Database:
-- PostgreSQL
+- Next.js Web Application
+- Express API Service
+- PostgreSQL Database
+- RabbitMQ Message Queue
+- Background Worker Service
+- File Storage Layer
+- AI Processing Layer
 
-ORM:
-- Prisma
 
-Reason:
-- Strong relational modeling
-- Type-safe database access
-- Migration support
-- Suitable for production scaling
 
-## Database
+## Architecture Diagram
 
-Technology:
-- PostgreSQL 17
-- Prisma ORM
 
-Entities:
-- Document
-- Job
-- ProcessingAttempt
+```
+                 Client
+                   |
+                   |
+              Next.js App
+                   |
+                   |
+              Express API
+                   |
+        -----------------------
+        |                     |
+   PostgreSQL              RabbitMQ
+        |                     |
+        |              Worker Service
+        |                     |
+        |          --------------------
+        |          |                  |
+    Metadata    Document Parser    AI Service
+
+```
+
+
+
+# 2. Request Flow
+
+
+## Upload Flow
+
+
+1. User selects multiple files.
+
+2. Frontend sends multipart request.
+
+3. API validates:
+
+- File type
+- File size
+- File count
+
+
+4. Files are stored.
+
+5. Document records are created.
+
+6. Jobs are inserted into RabbitMQ.
+
+7. API immediately responds.
+
+
+
+## Processing Flow
+
+
+1. Worker receives job.
+
+2. Worker changes status:
+
+QUEUED → PROCESSING
+
+
+3. Document content extraction:
+
+- PDF parser
+- TXT parser
+- OCR
+
+
+4. AI service generates:
+
 - Summary
 - Classification
-
-Migration Strategy:
-- Prisma migrations are version controlled.
-- Database changes are applied using `prisma migrate`.
-- All migrations are committed to source control.
-
-Persistence Guarantees:
-- Document state survives service restarts.
-- Job retries are tracked.
-- Processing history is retained.
-
-## Database Implementation
-
-The platform uses PostgreSQL with Prisma ORM.
-
-A shared database package is used by both API and worker services.
-
-Architecture:
-
-API Service
-    |
-    |
-Database Package
-    |
-    |
-Prisma Client
-    |
-    |
-PostgreSQL
+- Confidence
 
 
-Worker Service
-    |
-    |
-Database Package
-    |
-    |
-Prisma Client
-    |
-    |
-PostgreSQL
+5. Results saved.
+
+6. Status updated:
+
+PROCESSING → COMPLETED
 
 
-Entities:
 
-### Document
-Stores uploaded document metadata, storage reference, and current processing state.
-
-### Job
-Represents asynchronous processing work created after upload.
-
-### ProcessingAttempt
-Stores individual worker execution attempts and failures.
-
-### Summary
-Stores generated document summaries.
-
-### Classification
-Stores predicted document category and confidence score.
+# 3. Database Design
 
 
-Migration Strategy:
+## Document
 
-Database changes are managed through Prisma migrations.
-Migration files are committed to source control and applied during deployment.
 
-## Upload Validation
+Stores uploaded file information.
 
-Supported file types:
-- PDF
-- PNG/JPEG/WebP images
-- Plain text
 
-Limits:
-- Maximum file size: 10MB
-- Maximum files per request: 10
+Fields:
 
-Validation occurs before persistence.
-Rejected files never create database records.
+- id
+- filename
+- storageKey
+- mimeType
+- status
+- createdAt
+
+
+
+## Job
+
+
+Tracks background processing.
+
+
+Fields:
+
+- id
+- documentId
+- status
+- attempts
+- completedAt
+
+
+
+## Summary
+
+
+Stores generated summary.
+
+
+Fields:
+
+- documentId
+- content
+
+
+
+## Classification
+
+
+Stores prediction.
+
+
+Fields:
+
+- documentId
+- category
+- confidence
+
+
+
+# 4. Queue Design
+
+
+RabbitMQ is used because:
+
+
+- Reliable delivery
+- Message acknowledgement
+- Worker scaling
+- Retry support
+
+
+## Delivery
+
+
+Messages are acknowledged after successful processing.
+
+
+## Duplicate Handling
+
+
+Workers check existing job state before processing.
+
+
+Completed jobs are ignored.
+
+
+
+# 5. Scaling Strategy
+
+
+## API Scaling
+
+Multiple API instances can run behind a load balancer.
+
+
+## Worker Scaling
+
+
+Multiple workers can consume from the same queue.
+
+
+Example:
+
+
+```
+RabbitMQ
+
+Worker 1
+Worker 2
+Worker 3
+
+```
+
+
+# 6. Failure Handling
+
+
+## Worker Failure
+
+
+Message remains available and can be retried.
+
+
+## Invalid Document
+
+
+Document marked:
+
+FAILED
+
+
+Other jobs continue processing.
+
+
+## AI Provider Failure
+
+
+Retry with backoff.
+
+
+
+# 7. Security
+
+
+Implemented:
+
+- File validation
+- File size limits
+- MIME validation
+- Environment based secrets
+
+
+Production improvements:
+
+- Authentication
+- Authorization
+- Virus scanning
+- Encryption
+
+
+# 8. Observability
+
+
+Recommended:
+
+- Structured logs
+- Metrics
+- Distributed tracing
+- Health checks
+
+
+# 9. Trade-offs
+
+
+## Local Storage
+
+
+Chosen for development simplicity.
+
+
+Production:
+
+Use:
+
+- AWS S3
+- Azure Blob Storage
+
+
+## Mock AI
+
+
+Chosen because assignment allows deterministic implementation.
+
+
+Production:
+
+Replace adapter with:
+
+- OpenAI
+- Azure OpenAI
+
