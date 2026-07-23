@@ -380,3 +380,39 @@ and
 ```
 SYSTEM_DESIGN.md
 ```
+
+## Incomplete Areas & Future Improvements
+
+The current implementation focuses on demonstrating the core scalable document processing workflow within the assignment timeframe.
+
+### Current Limitations
+
+- Authentication and user management are not implemented. The current version assumes a single authenticated session.
+- Local file storage is used for development. A production deployment would use object storage such as AWS S3 or Azure Blob Storage.
+- OCR support is implemented using Tesseract.js but may require optimization for large-scale image processing.
+- The AI summarization and classification layer is implemented through an LLM service adapter. Additional prompt optimization and evaluation pipelines would be required for production accuracy.
+- Real-time updates currently use polling. WebSocket or Server-Sent Events could be introduced for large-scale deployments.
+- Malware scanning and advanced file security validation are not included.
+
+### Production Improvements
+
+With additional development time, the following improvements would be considered:
+
+- Add authentication and role-based access control.
+- Introduce cloud object storage with signed URLs.
+- Add document retention policies and automated cleanup.
+- Implement Redis-based caching for frequently accessed results.
+- Add dead-letter queue handling and retry dashboards.
+- Add distributed tracing using OpenTelemetry.
+- Add monitoring dashboards using Prometheus and Grafana.
+- Improve AI evaluation using benchmark datasets.
+- Add comprehensive automated testing for API, worker, and frontend flows.
+- Containerize and deploy using Kubernetes with horizontal scaling.
+
+### Assumptions
+
+- The system is designed for a single-user demonstration environment.
+- PostgreSQL is used as the persistent datastore.
+- RabbitMQ provides reliable asynchronous job delivery.
+- The AI provider integration is abstracted to allow replacement with OpenAI or another production NLP provider.
+- Processing failures are expected and handled through document/job status updates.
