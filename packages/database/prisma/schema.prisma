@@ -30,6 +30,8 @@ model Document {
   status       DocumentStatus @default(QUEUED)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
+  category     String?
+  confidence   Float?
 
   jobs           Job[]
   summary        Summary?

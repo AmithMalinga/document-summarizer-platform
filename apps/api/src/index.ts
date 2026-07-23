@@ -1,15 +1,41 @@
-import "dotenv/config";
-
 import app from "./app";
 
+import {
+    connectQueue
+} from "../../worker/src/services/queue.service";
 
-const PORT = process.env.PORT || 4000;
+
+async function startServer() {
+
+    try {
+
+        await connectQueue();
 
 
-app.listen(PORT, () => {
+        app.listen(
+            4000,
+            () => {
 
-    console.log(
-        `API server running on port ${PORT}`
-    );
+                console.log(
+                    "API server running on port 4000"
+                );
 
-});
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Startup failed:",
+            error
+        );
+
+        process.exit(1);
+
+    }
+
+}
+
+
+startServer();

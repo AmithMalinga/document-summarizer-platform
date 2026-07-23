@@ -1,5 +1,9 @@
 {
     "compilerOptions": {
+        "types": [
+            "node",
+            "express"
+        ],
         "target": "ES2022",
         "module": "commonjs",
         // "outDir": "dist",

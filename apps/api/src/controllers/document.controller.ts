@@ -8,6 +8,9 @@ import {
     createDocument
 } from "../services/document.service";
 
+import {
+    publishJob
+} from "../../../worker/src/services/queue.service";
 
 export async function uploadDocuments(
     req: Request,
@@ -52,6 +55,16 @@ export async function uploadDocuments(
 
                 const result =
                     await createDocument(file);
+
+                await publishJob({
+
+                    documentId:
+                        result.document.id,
+
+                    jobId:
+                        result.job.id
+
+                });
 
 
                 return {
