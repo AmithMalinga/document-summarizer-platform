@@ -1,7 +1,8 @@
 import { Router } from "express";
 
 import {
-    uploadDocuments
+    uploadDocuments,
+    getDocument
 } from "../controllers/document.controller";
 
 import {
@@ -36,6 +37,12 @@ router.post(
     },
 
     uploadDocuments
+);
+
+
+router.get(
+    "/:id",
+    getDocument
 );
 
 

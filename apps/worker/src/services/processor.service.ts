@@ -6,7 +6,39 @@ export async function processDocument(
     jobId: string
 ) {
 
+    const existingJob =
+        await prisma.job.findUnique({
+            where: {
+                id: jobId
+            }
+        });
 
+
+    if (!existingJob) {
+        console.log(
+            "Job not found:",
+            jobId
+        );
+        return;
+    }
+
+
+    // Idempotency protection
+    if (
+        existingJob.status === "COMPLETED"
+    ) {
+
+        console.log(
+            "Duplicate job ignored:",
+            jobId
+        );
+
+        return;
+    }
+
+
+
+    // Mark processing
     await prisma.job.update({
 
         where: {
@@ -14,10 +46,13 @@ export async function processDocument(
         },
 
         data: {
+
             status: "PROCESSING"
+
         }
 
     });
+
 
 
     await prisma.document.update({
@@ -27,7 +62,9 @@ export async function processDocument(
         },
 
         data: {
+
             status: "PROCESSING"
+
         }
 
     });
@@ -41,10 +78,23 @@ export async function processDocument(
 
 
 
+    // Mock AI processing delay
     await new Promise(
         resolve =>
             setTimeout(resolve, 5000)
     );
+
+
+
+    /*
+        Future replacement:
+
+        1. Extract text
+        2. Send extracted text to LLM
+        3. Classify document
+        4. Save confidence
+
+    */
 
 
 
@@ -63,19 +113,8 @@ export async function processDocument(
 
 
 
-    await prisma.document.update({
 
-        where: {
-            id: documentId
-        },
-
-        data: {
-            status: "COMPLETED"
-        }
-
-    });
-
-
+    // Save summary
     await prisma.summary.create({
 
         data: {
@@ -90,6 +129,8 @@ export async function processDocument(
     });
 
 
+
+    // Save classification
     await prisma.classification.create({
 
         data: {
@@ -106,6 +147,29 @@ export async function processDocument(
 
     });
 
+
+
+
+    // Complete document
+    await prisma.document.update({
+
+        where: {
+            id: documentId
+        },
+
+        data: {
+
+            status:
+                "COMPLETED"
+
+        }
+
+    });
+
+
+
+
+    // Complete job
     await prisma.job.update({
 
         where: {
@@ -114,7 +178,8 @@ export async function processDocument(
 
         data: {
 
-            status: "COMPLETED",
+            status:
+                "COMPLETED",
 
             completedAt:
                 new Date()
@@ -123,12 +188,9 @@ export async function processDocument(
 
     });
 
-
-
     console.log(
         "Completed:",
         documentId
     );
-
 
 }

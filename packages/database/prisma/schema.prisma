@@ -47,6 +47,7 @@ model Job {
   attempts    Int       @default(0)
   createdAt   DateTime  @default(now())
   completedAt DateTime?
+  processedAt DateTime?
 
   document Document @relation(fields: [documentId], references: [id])
 

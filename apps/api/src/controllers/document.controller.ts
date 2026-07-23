@@ -3,6 +3,9 @@ import {
     Response
 } from "express";
 
+import {
+    getDocumentById
+} from "../services/document-query.service";
 
 import {
     createDocument
@@ -104,6 +107,47 @@ export async function uploadDocuments(
             message: "Upload failed"
 
         });
+
+    }
+
+}
+
+export async function getDocument(
+    req: Request,
+    res: Response
+) {
+
+    try {
+
+        const {
+            id
+        } = req.params;
+
+
+
+        const document =
+            await getDocumentById(id);
+
+
+
+        return res.json(
+            document
+        );
+
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+
+        return res.status(404)
+            .json({
+
+                message:
+                    "Document not found"
+
+            });
 
     }
 

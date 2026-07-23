@@ -5,11 +5,6 @@ import {
 } from "./queue/consumer";
 
 console.log(
-    "DATABASE:",
-    process.env.DATABASE_URL
-);
-
-console.log(
     "Worker started"
 );
 
