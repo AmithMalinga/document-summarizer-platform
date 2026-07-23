@@ -1,65 +1,179 @@
-import Link from "next/link";
-import { getDocument } from "@/lib/api";
-import StatusBadge from "@/components/StatusBadge";
+"use client";
 
-type Props = {
-    params: Promise<{
-        id: string;
-    }>;
-};
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-    return (
-        <div className="flex flex-col gap-1 border-b border-[var(--line)] py-4 sm:flex-row sm:items-baseline sm:justify-between">
-            <dt className="font-mono text-xs uppercase tracking-wider text-[var(--ink-soft)]">
-                {label}
-            </dt>
-            <dd className="text-[var(--ink)] sm:text-right">{children}</dd>
-        </div>
-    );
-}
+import {
+    useParams
+} from "next/navigation";
 
-export default async function DocumentPage({ params }: Props) {
-    const { id } = await params;
-    const document = await getDocument(id);
 
-    return (
-        <main className="mx-auto max-w-2xl p-8">
-            <Link
-                href="/dashboard"
-                className="font-mono text-xs uppercase tracking-wider text-[var(--ink-soft)] hover:text-[var(--accent)]"
-            >
-                ← Back to dashboard
-            </Link>
+import {
+    useDocumentPolling
+} from "@/hooks/useDocumentPolling";
 
-            <div className="mt-4 flex items-start justify-between gap-4 border-b border-[var(--line)] pb-6">
-                <h1 className="font-display text-3xl leading-snug text-[var(--ink)]">
-                    {document.originalName}
-                </h1>
-                <StatusBadge status={document.status} />
+
+
+export default function DocumentPage() {
+
+
+    const params =
+        useParams();
+
+
+    const id =
+        params.id as string;
+
+
+
+    const {
+        document,
+        loading
+
+    } =
+        useDocumentPolling(
+            id
+        );
+
+
+
+    if (loading) {
+
+        return (
+
+            <div className="p-8">
+
+                Loading document...
+
             </div>
 
-            <dl className="mt-2">
-                <Field label="Type">{document.mimeType}</Field>
-                <Field label="Summary">
-                    {document.summary?.content ?? (
-                        <span className="text-[var(--ink-soft)]">Not yet available</span>
-                    )}
-                </Field>
-                <Field label="Category">
-                    {document.classification?.category ?? (
-                        <span className="text-[var(--ink-soft)]">Not yet available</span>
-                    )}
-                </Field>
-                <Field label="Confidence">
-                    {document.classification?.confidence ?? (
-                        <span className="text-[var(--ink-soft)]">—</span>
-                    )}
-                </Field>
-                <Field label="Created">
-                    {new Date(document.createdAt).toLocaleString()}
-                </Field>
-            </dl>
+        );
+
+    }
+
+
+
+    if (!document) {
+
+        return (
+
+            <div className="p-8">
+
+                Document not found
+
+            </div>
+
+        );
+
+    }
+
+
+
+    return (
+
+        <main className="p-8 space-y-6">
+
+
+            <h1 className="text-2xl font-bold">
+
+                {document.originalName}
+
+            </h1>
+
+
+
+            <div>
+
+                Status:
+
+                <span className="ml-2 font-semibold">
+
+                    {document.status}
+
+                </span>
+
+
+            </div>
+
+
+
+            {
+                document.status === "PROCESSING"
+                &&
+                <p>
+
+                    Your document is being processed...
+
+                </p>
+
+            }
+
+
+
+            {
+                document.status === "COMPLETED"
+                &&
+                <>
+
+                    <section>
+
+                        <h2 className="font-bold">
+
+                            Summary
+
+                        </h2>
+
+
+                        <p>
+
+                            {
+                                document.summary?.content
+                            }
+
+                        </p>
+
+
+                    </section>
+
+
+
+                    <section>
+
+                        <h2 className="font-bold">
+
+                            Classification
+
+                        </h2>
+
+
+                        <p>
+
+                            {
+                                document.classification?.category
+                            }
+
+                        </p>
+
+
+                        <p>
+
+                            Confidence:
+
+                            {
+                                document.classification?.confidence
+                            }
+
+                        </p>
+
+
+                    </section>
+
+                </>
+
+            }
+
+
+
         </main>
+
     );
+
 }

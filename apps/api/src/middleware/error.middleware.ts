@@ -4,36 +4,53 @@ import {
     NextFunction
 } from "express";
 
-import multer from "multer";
-
 
 export function errorMiddleware(
     err: any,
-    _req: Request,
+    req: Request,
     res: Response,
-    _next: NextFunction
+    next: NextFunction
 ) {
 
 
-    console.error(err);
-
-
-    if (err instanceof multer.MulterError) {
+    if (
+        err.code === "LIMIT_FILE_SIZE"
+    ) {
 
         return res.status(400).json({
 
-            message: err.message
+            message:
+                "File size exceeds 10MB limit"
 
         });
 
     }
 
 
-    return res.status(400).json({
+
+    if (
+        err.message?.includes(
+            "Unsupported file type"
+        )
+    ) {
+
+        return res.status(400).json({
+
+            message:
+                err.message
+
+        });
+
+    }
+
+
+
+    return res.status(500).json({
 
         message:
-            err.message || "Something went wrong"
+            "Internal server error"
 
     });
+
 
 }

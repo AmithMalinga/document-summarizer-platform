@@ -1,8 +1,10 @@
 import fs from "fs/promises";
 
+import { PDFParse } from "pdf-parse";
+
 import {
-    PDFParse
-} from "pdf-parse";
+    createWorker
+} from "tesseract.js";
 
 
 
@@ -17,7 +19,7 @@ export async function extractText(
 
         case "application/pdf":
 
-            return extractPdf(
+            return await extractPdf(
                 filePath
             );
 
@@ -25,7 +27,17 @@ export async function extractText(
 
         case "text/plain":
 
-            return extractTxt(
+            return await extractTxt(
+                filePath
+            );
+
+
+
+        case "image/png":
+        case "image/jpeg":
+        case "image/webp":
+
+            return await extractImage(
                 filePath
             );
 
@@ -43,6 +55,8 @@ export async function extractText(
 
 
 
+
+
 async function extractPdf(
     filePath: string
 ): Promise<string> {
@@ -56,28 +70,18 @@ async function extractPdf(
 
     const parser =
         new PDFParse({
-
             data: buffer
-
         });
-
 
 
     const result =
         await parser.getText();
 
 
-
-    await parser.destroy();
-
-
-
-    return (
-        result.text ??
-        ""
-    ).trim();
+    return result.text.trim();
 
 }
+
 
 
 
@@ -95,5 +99,39 @@ async function extractTxt(
 
 
     return content.trim();
+
+}
+
+
+
+
+
+async function extractImage(
+    filePath: string
+): Promise<string> {
+
+
+    console.log(
+        "Running OCR:",
+        filePath
+    );
+
+
+    const worker =
+        await createWorker(
+            "eng"
+        );
+
+
+    const result =
+        await worker.recognize(
+            filePath
+        );
+
+
+    await worker.terminate();
+
+
+    return result.data.text.trim();
 
 }

@@ -12,7 +12,7 @@ const allowedMimeTypes = [
 
     "text/plain",
 
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    // "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 
     "image/jpeg",
 
